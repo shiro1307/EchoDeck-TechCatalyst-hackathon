@@ -20,6 +20,7 @@ GEMINI_API_KEY = os.getenv("GENAI_KEY")
 APP_SECRET_KEY = os.getenv("SECRET_KEY")
 FIREBASE_CONFIG = os.getenv("FIREBASE_CONFIG")
 FIREBASE_CONFIG = json.loads(FIREBASE_CONFIG)
+CRED = os.getenv("SERVICE_ACC_KEY")
 
 class Card(BaseModel):
     question: str
