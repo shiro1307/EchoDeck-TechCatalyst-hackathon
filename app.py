@@ -34,7 +34,7 @@ app.secret_key = APP_SECRET_KEY
 
 client = genai.Client(api_key=GEMINI_API_KEY)
 
-cred = credentials.Certificate('serviceAccountKey.json')
+cred = credentials.Certificate(json.loads(CRED))
 firebase_admin.initialize_app(cred)
 
 db = firestore.client()
@@ -707,7 +707,7 @@ def api_import_stack():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
-"""
+""""
 if __name__ == '__main__':
     app.run(debug=True)
 """
