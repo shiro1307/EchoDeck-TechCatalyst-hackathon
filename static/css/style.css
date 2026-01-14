@@ -1,0 +1,156 @@
+body{
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    margin: 2em;
+}
+
+header{
+    background-color: #325475;
+    padding: 5px;
+    border-radius: 12px;
+    box-shadow: 0px 4px 0px #19293a;
+    margin-bottom: 2em;
+    color: white;
+    padding-left: 1em;
+    padding-right: 1em;
+}
+
+.dashboard-grid {
+    padding: 10px;
+}
+
+.dashboard-button {
+    display: block;
+    background-color: #4988C4;
+    color: white;
+    padding: 10px;
+    margin: 10px;
+    text-decoration: none;
+    border-radius: 12px;
+    font-size: 18px;
+    max-width: 400px;
+    margin-bottom: 1em;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+table, th, td {
+    border: 1px solid black;
+}
+th, td {
+    padding: 10px;
+    text-align: left;
+}
+
+.container{
+    text-align: center;
+}
+.container form{
+    text-align: left;
+    width: fit-content;
+    margin: auto;
+    margin-bottom: 2em;
+}
+.container input{
+    float: right;
+    margin-left: 2em;
+}
+.container button{
+    width: 100%;
+}
+
+button,a {
+    background-color: #4988C4;
+    padding: 7px;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: small;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    font-weight: bolder;
+    box-shadow: 0px 4px 0px #3a6289;
+    transition: all 0.2s;
+    transform: translateY(-2px);
+    text-transform: uppercase;
+}
+
+a{
+    display: inline-block;
+    text-decoration: none;
+}
+
+button:hover,a:hover{
+    background-color: #70a6d9;
+}
+
+button:active,a:active{
+    background-color: #325475;
+    border-bottom: 0;
+    transform: translateY(2px);
+    box-shadow: 0px 0px 0px #325475;
+}
+
+.negative{
+    background-color: rgb(255, 69, 69);
+    box-shadow: 0px 4px 0px rgb(141, 52, 52);
+}
+
+.negative:hover{
+    background-color: rgb(255, 125, 125);
+}
+
+.negative:active{
+    background-color: rgb(137, 53, 53);
+}
+
+.positive{
+    background-color: rgb(38, 168, 38);
+    box-shadow: 0px 4px 0px rgb(40, 104, 40);
+}
+
+.positive:hover{
+    background-color: rgb(109, 183, 109);
+}
+
+.positive:active{
+    background-color: rgb(31, 93, 47);
+}
+
+.stackForm input, textarea{
+    display: block;
+    width: 400px;
+}
+
+.card-box {
+    background: rgb(249, 249, 249);
+    border: 1px solid #959595;
+    padding: 20px;
+    margin-bottom: 1em;
+    max-width: 400px;
+    margin-bottom: 15px;
+    border-radius: 12px;
+    box-shadow: 0px 3px 0px #959595;
+}
+
+.card-number {
+    font-weight: bold;
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.card-box input{
+    margin-top: 10px;
+    width: 100%;
+}
+
+hr{
+    border: 1px solid rgba(0, 0, 0, 0.533);
+}
+
+th{
+    background-color:#3a6289;
+    color: white;
+    
+}

@@ -1,0 +1,52 @@
+{% extends "stack_form_base.html" %}
+
+{% block title %}Edit Stack{% endblock %}
+
+{% block heading %}Edit Stack{% endblock %}
+
+{% block back_link %}/dashboard{% endblock %}
+
+{% block submit_text %}Update Stack{% endblock %}
+
+{% block cancel_link %}/my-stacks{% endblock %}
+
+{% block extra_script %}
+const stackData = {{ stack | tojson }};
+
+document.getElementById('stackForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const data = getFormData();
+    
+    try {
+        const response = await fetch('/api/edit-stack/{{ stack_id }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('Stack updated successfully!');
+            window.location.href = '/my-stacks';
+        } else {
+            alert('Error updating stack: ' + result.error);
+        }
+    } catch (error) {
+        alert('Error: ' + error);
+    }
+});
+
+// Load existing data
+document.getElementById('title').value = stackData.title;
+document.getElementById('description').value = stackData.description;
+document.getElementById('visibility').value = stackData.visibility;
+
+// Load existing cards
+stackData.cards.forEach(card => {
+    addCard(card.question, card.answer);
+});
+{% endblock %}

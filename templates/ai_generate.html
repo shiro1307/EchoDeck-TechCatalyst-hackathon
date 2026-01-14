@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Generate Flashcards</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="../static/css/style.css">
+</head>
+<body>
+    <header>
+    <h2>Generate Flashcards with AI</h2>
+    </header>
+    
+    <form id="generateForm" enctype="multipart/form-data">
+        <div>
+            <label>Stack Title:</label>
+            <input type="text" id="title" name="title" required>
+        </div>
+        <br>
+        
+        <div>
+            <label>Stack Description:</label>
+            <textarea id="description" name="description" rows="3"></textarea>
+        </div>
+        <br>
+        
+        <div>
+            <label>Number of Flashcards:</label>
+            <input type="number" id="num_cards" name="num_cards" min="1" max="100" value="10" required>
+        </div>
+        <br>
+        <hr>
+        <br>
+        
+        <div>
+            <label>Upload PDF (optional):</label>
+            <input type="file" id="pdf_file" name="pdf_file" accept=".pdf">
+        </div>
+        <br>
+        
+        <div>
+            <label>Or Paste Text:</label><br><br>
+            <textarea id="text_input" name="text_input" rows="10" placeholder="Paste your text here..."></textarea>
+        </div>
+        <br>
+        
+        <button type="submit">Generate Flashcards</button>
+        <a href="/dashboard">Cancel</a>
+        
+        <div id="status" style="margin-top: 20px;"></div>
+    </form>
+
+    <script>
+        document.getElementById('generateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = 'Generating flashcards...';
+            
+            const formData = new FormData();
+            formData.append('title', document.getElementById('title').value);
+            formData.append('description', document.getElementById('description').value);
+            formData.append('num_cards', document.getElementById('num_cards').value);
+            formData.append('text_input', document.getElementById('text_input').value);
+            
+            const pdfFile = document.getElementById('pdf_file').files[0];
+            if (pdfFile) {
+                formData.append('pdf_file', pdfFile);
+            }
+            
+            try {
+                const response = await fetch('/api/generate-flashcards', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    statusDiv.textContent = 'Flashcards generated! Redirecting...';
+                    window.location.href = `/edit-stack/${result.stack_id}`;
+                } else {
+                    statusDiv.textContent = 'Error: ' + result.error;
+                }
+            } catch (error) {
+                statusDiv.textContent = 'Error: ' + error;
+            }
+        });
+    </script>
+</body>
+</html>

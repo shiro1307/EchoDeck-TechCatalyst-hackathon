@@ -1,0 +1,43 @@
+{% extends "stack_form_base.html" %}
+
+{% block title %}Create Stack{% endblock %}
+
+{% block heading %}Create New Stack{% endblock %}
+
+{% block back_link %}/dashboard{% endblock %}
+
+{% block submit_text %}Create Stack{% endblock %}
+
+{% block cancel_link %}/dashboard{% endblock %}
+
+{% block extra_script %}
+document.getElementById('stackForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const data = getFormData();
+    
+    try {
+        const response = await fetch('/api/create-stack', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('Stack created successfully!');
+            window.location.href = '/dashboard';
+        } else {
+            alert('Error creating stack: ' + result.error);
+        }
+    } catch (error) {
+        alert('Error: ' + error);
+    }
+});
+
+// Add one card by default
+addCard();
+{% endblock %}

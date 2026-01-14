@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Flashcard Stacks</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="../static/css/style.css">
+</head>
+<body>
+    <header>
+    <h2>My Flashcard Stacks</h2>
+    </header>
+    
+    <a href="/dashboard" class="positive"> < Back to Dashboard</a>
+    <a href="/create-stack">Create New Stack</a>
+    
+    <br><br>
+    
+    <label>Search:</label>
+    <input type="text" id="searchInput" onkeyup="searchStacks()" placeholder="Search by title or description...">
+    
+    <br><br>
+    
+    <table id="stacksTable">
+        <thead>
+            <tr>
+                <th>Stack Name [Click for details]</th>
+                <th>Description</th>
+                <th>Likes</th>
+                <th>Saves</th>
+                <th>Creation Date</th>
+                <th>View</th>
+                <th>Edit</th>
+                <th>Download</th>
+                <th>Delete</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for stack in stacks %}
+            <tr>
+                <td>{{ stack.title }} <a style="float: right;" href="/stack/{{ stack.id }}">View</a></td>
+                <td>{{ stack.description if stack.description else '-' }}</td>
+                <td>{{ stack.likes }}</td>
+                <td>{{ stack.saves }}</td>
+                <td>{{ stack.created_at }}</td>
+                <td><a class="positive" href="/flashcards/{{ stack.id }}">Open</a></td>
+                <td><a href="/edit-stack/{{ stack.id }}">Edit</a></td>
+                <td>
+                    <button onclick="downloadStack('{{ stack.id }}', '{{ stack.title }}')">Download</button>
+                </td>
+                <td>
+                    <form method="POST" action="/delete-stack/{{ stack.id }}" style="display:inline;">
+                        <button class="negative" type="submit" onclick="return confirm('Are you sure you want to delete this stack?')">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    {% if stacks|length == 0 %}
+    <p>You haven't created any stacks yet.</p>
+    {% endif %}
+    
+    <script>
+        const stacksData = {{ stacks | tojson }};
+        
+        function searchStacks() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById('stacksTable');
+            const rows = table.getElementsByTagName('tr');
+            
+            for (let i = 1; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                const titleCell = cells[0];
+                const descCell = cells[1];
+                
+                if (titleCell && descCell) {
+                    const titleText = titleCell.textContent || titleCell.innerText;
+                    const descText = descCell.textContent || descCell.innerText;
+                    
+                    // Search in both title and description
+                    if (titleText.toLowerCase().indexOf(filter) > -1 || 
+                        descText.toLowerCase().indexOf(filter) > -1) {
+                        rows[i].style.display = '';
+                    } else {
+                        rows[i].style.display = 'none';
+                    }
+                }
+            }
+        }
+        
+        function downloadStack(stackId, stackTitle) {
+            // Find the stack data
+            const stack = stacksData.find(s => s.id === stackId);
+            
+            if (!stack) {
+                alert('Stack not found');
+                return;
+            }
+            
+            // Create export data
+            const exportData = {
+                title: stack.title,
+                description: stack.description,
+                cards: stack.cards,
+                created_at: stack.created_at,
+                likes: stack.likes,
+                saves: stack.saves
+            };
+            
+            // Convert to JSON string
+            const jsonString = JSON.stringify(exportData, null, 2);
+            
+            // Create blob and download
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${stackTitle.replace(/[^a-z0-9]/gi, '_')}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>

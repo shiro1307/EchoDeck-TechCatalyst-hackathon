@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ stack.title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="../static/css/style.css">
+</head>
+<body>
+    <header>
+    <h2>{{ stack.title }}</h2>
+    </header>
+
+    <a href="/dashboard" class="positive"> < Back to Dashboard</a><br>
+    
+    <p><strong>Description:</strong> {{ stack.description }}</p>
+    
+    <p><strong>Likes:</strong> <span id="likeCount">{{ stack.likes }}</span></p>
+    <p><strong>Saves:</strong> <span id="saveCount">{{ stack.saves }}</span></p>
+    <p><strong>Created:</strong> {{ stack.created_at }}</p>
+    <p><strong>Visibility:</strong> {{ stack.visibility }}</p>
+    <p><strong>Number of cards:</strong> {{ stack.cards|length }}</p>
+    
+    <div>
+        <button id="likeBtn" onclick="toggleLike()">
+            {% if has_liked %}Unlike{% else %}Like{% endif %}
+        </button>
+        <button id="saveBtn" onclick="saveStack()">Save</button>
+        
+        {% if can_start %}
+        <a href="/flashcards/{{ stack_id }}">Start</a>
+        {% endif %}
+        
+        {% if is_owner %}
+        <a href="/edit-stack/{{ stack_id }}">Edit</a>
+        {% endif %}
+    </div>
+    
+    <br>
+    <p><strong>Share this stack:</strong></p>
+    <input type="text" id="shareUrl" value="{{ share_url }}" readonly size="50">
+    <button onclick="copyUrl()">Copy Link</button>
+    
+    <script>
+        let hasLiked = {{ 'true' if has_liked else 'false' }};
+        
+        function toggleLike() {
+            const endpoint = hasLiked ? '/api/unlike-stack/{{ stack_id }}' : '/api/like-stack/{{ stack_id }}';
+            
+            fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('likeCount').textContent = data.likes;
+                    hasLiked = !hasLiked;
+                    document.getElementById('likeBtn').textContent = hasLiked ? 'Unlike' : 'Like';
+                    alert(hasLiked ? 'Liked!' : 'Unliked!');
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            });
+        }
+        
+        function saveStack() {
+            fetch('/api/save-stack/{{ stack_id }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('saveCount').textContent = data.saves;
+                    alert('Saved! You can now start this stack.');
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            });
+        }
+        
+        function copyUrl() {
+            const input = document.getElementById('shareUrl');
+            input.select();
+            document.execCommand('copy');
+            alert('Link copied to clipboard!');
+        }
+    </script>
+</body>
+</html>

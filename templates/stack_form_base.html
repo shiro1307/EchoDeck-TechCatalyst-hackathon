@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Stack Form{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+    <h2>{% block heading %}Stack Form{% endblock %}</h2>
+    </header>
+    
+    <a href="{% block back_link %}/dashboard{% endblock %}" class="positive"> < Back to Dashboard</a><hr><br>
+    
+    <form class="stackForm" id="stackForm">
+        <div>
+            <label>Title:</label>
+            <input type="text" id="title" required>
+        </div>
+        <br>
+        <div>
+            <label>Description:</label>
+            <textarea id="description" rows="3"></textarea>
+        </div>
+        <br>
+        <div>
+            <label>Visibility:</label>
+            <select id="visibility">
+                <option value="private">Private</option>
+                <option value="public">Public</option>
+            </select>
+            <p>Note:
+            Public stacks can be accessed by anyone.
+            Private stacks cannot be shared or accessed via the marketplace.
+            </p>
+        </div>
+        
+        <br>
+        <hr>
+
+        <h2>Create/edit cards:</h2>
+        <div id="cardsContainer"></div>
+        
+        <button type="button" onclick="addCard()">Add Card</button>
+        <button class="positive" type="submit">{% block submit_text %}Submit{% endblock %}</button>
+        <br>
+        <a href="{% block cancel_link %}/dashboard{% endblock %}">Cancel</a><br>
+    </form>
+
+    <script>
+        let cardCount = 0;
+        
+        function addCard(question = '', answer = '') {
+            const container = document.getElementById('cardsContainer');
+            const cardDiv = document.createElement('div');
+            cardDiv.className = 'card-box';
+            cardDiv.id = `card-${cardCount}`;
+            
+            cardDiv.innerHTML = `
+                <p class="card-number">Card ${cardCount + 1}</p>
+                <label>Question:</label>
+                <div class="input-group">
+                    <input type="text" class="question" id="question-${cardCount}" value="${question}" required>
+                    <button type="button" class="rephrase-btn" onclick="rephraseText('question-${cardCount}', 'question')">Rephrase</button>
+                </div>
+                <br>
+                <label>Answer:</label>
+                <div class="input-group">
+                    <input type="text" class="answer" id="answer-${cardCount}" value="${answer}" required>
+                    <button type="button" class="rephrase-btn" onclick="rephraseText('answer-${cardCount}', 'answer')">Rephrase</button>
+                </div>
+                <div class="card-controls">
+                    <button type="button" onclick="moveUp(${cardCount})">Move Up</button>
+                    <button type="button" onclick="moveDown(${cardCount})">Move Down</button>
+                    <button class="negative" type="button" onclick="deleteCard(${cardCount})">Delete</button>
+                </div>
+            `;
+            
+            container.appendChild(cardDiv);
+            cardCount++;
+            updateCardNumbers();
+        }
+        
+        function deleteCard(id) {
+            const card = document.getElementById(`card-${id}`);
+            card.remove();
+            updateCardNumbers();
+        }
+        
+        function moveUp(id) {
+            const card = document.getElementById(`card-${id}`);
+            const prev = card.previousElementSibling;
+            if (prev) {
+                card.parentNode.insertBefore(card, prev);
+                updateCardNumbers();
+            }
+        }
+        
+        function moveDown(id) {
+            const card = document.getElementById(`card-${id}`);
+            const next = card.nextElementSibling;
+            if (next) {
+                card.parentNode.insertBefore(next, card);
+                updateCardNumbers();
+            }
+        }
+        
+        function updateCardNumbers() {
+            const container = document.getElementById('cardsContainer');
+            const cards = container.querySelectorAll('.card-box');
+            cards.forEach((card, index) => {
+                const numberElement = card.querySelector('.card-number');
+                if (numberElement) {
+                    numberElement.textContent = `Card ${index + 1}`;
+                }
+            });
+        }
+        
+        function getFormData() {
+            const title = document.getElementById('title').value;
+            const description = document.getElementById('description').value;
+            const visibility = document.getElementById('visibility').value;
+            
+            const cardDivs = document.querySelectorAll('#cardsContainer > div');
+            const cards = [];
+            
+            cardDivs.forEach(cardDiv => {
+                const question = cardDiv.querySelector('.question').value;
+                const answer = cardDiv.querySelector('.answer').value;
+                cards.push([question, answer]);
+            });
+            
+            return {
+                title: title,
+                description: description,
+                visibility: visibility,
+                cards: cards
+            };
+        }
+        
+        async function rephraseText(inputId, context) {
+            const inputElement = document.getElementById(inputId);
+            const text = inputElement.value.trim();
+            
+            if (!text) {
+                alert('Please enter some text before rephrasing!');
+                return;
+            }
+            
+            // Find the rephrase button and disable it
+            const button = event.target;
+            button.disabled = true;
+            button.textContent = 'Rephrasing...';
+            
+            try {
+                const response = await fetch('/api/rephrase', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        text: text,
+                        context: context
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    inputElement.value = result.rephrased;
+                } else {
+                    alert('Error rephrasing: ' + result.error);
+                }
+            } catch (error) {
+                alert('Error: ' + error);
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Rephrase';
+            }
+        }
+        
+        {% block extra_script %}{% endblock %}
+    </script>
+</body>
+</html>

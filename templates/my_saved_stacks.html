@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Saved Stacks</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="../static/css/style.css">
+</head>
+<body>
+    <header>
+    <h2>My Saved Stacks</h2>
+    </header>
+    
+    <a href="/dashboard" class="positive"> < Back to Dashboard</a>
+    <a href="/my-stacks">My Stacks</a>
+    
+    <br><br>
+    
+    <label>Search:</label>
+    <input type="text" id="searchInput" onkeyup="searchStacks()" placeholder="Search by title or description...">
+    
+    <br><br>
+    
+    <table id="stacksTable">
+        <thead>
+            <tr>
+                <th>Stack Name</th>
+                <th>Description</th>
+                <th>Likes</th>
+                <th>Saves</th>
+                <th>Cards</th>
+                <th>View</th>
+                <th>Start</th>
+                <th>Like</th>
+                <th>Unsave</th>
+                <th>Fork</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for stack in stacks %}
+            <tr>
+                <td>{{ stack.title }}</td>
+                <td>{{ stack.description }}</td>
+                <td id="likes-{{ stack.id }}">{{ stack.likes }}</td>
+                <td id="saves-{{ stack.id }}">{{ stack.saves }}</td>
+                <td>{{ stack.cards|length }}</td>
+                <td><a href="/stack/{{ stack.id }}">View</a></td>
+                <td><a href="/flashcards/{{ stack.id }}">Start</a></td>
+                <td>
+                    <button onclick="likeStack('{{ stack.id }}')">Like</button>
+                </td>
+                <td>
+                    <button class="negative" onclick="unsaveStack('{{ stack.id }}')">Unsave</button>
+                </td>
+                <td>
+                    <button onclick="forkStack('{{ stack.id }}')">Fork</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    {% if stacks|length == 0 %}
+    <p>You haven't saved any stacks yet.</p>
+    {% endif %}
+
+    <script>
+        function searchStacks() {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById('stacksTable');
+            const rows = table.getElementsByTagName('tr');
+            
+            for (let i = 1; i < rows.length; i++) {
+                const titleCell = rows[i].getElementsByTagName('td')[0];
+                const descCell = rows[i].getElementsByTagName('td')[1];
+                
+                if (titleCell && descCell) {
+                    const titleText = titleCell.textContent || titleCell.innerText;
+                    const descText = descCell.textContent || descCell.innerText;
+                    
+                    if (titleText.toLowerCase().indexOf(filter) > -1 || 
+                        descText.toLowerCase().indexOf(filter) > -1) {
+                        rows[i].style.display = '';
+                    } else {
+                        rows[i].style.display = 'none';
+                    }
+                }
+            }
+        }
+        
+        function likeStack(stackId) {
+            fetch(`/api/like-stack/${stackId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById(`likes-${stackId}`).textContent = data.likes;
+                    alert('Liked!');
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            });
+        }
+        
+        function unsaveStack(stackId) {
+            if (!confirm('Are you sure you want to unsave this stack?')) {
+                return;
+            }
+            
+            fetch(`/api/unsave-stack/${stackId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Unsaved!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            });
+        }
+        
+        function forkStack(stackId) {
+            if (!confirm('This will create a copy of this stack in your collection. Continue?')) {
+                return;
+            }
+            
+            fetch(`/api/fork-stack/${stackId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Stack forked successfully! Check "My Stacks".');
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
