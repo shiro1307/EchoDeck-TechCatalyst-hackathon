@@ -4,64 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
-
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="../static/css/style.css">
-
+    <style>
+        .dashboard-container {
+            display: flex;
+            gap: 2em;
+            align-items: flex-start;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard-container {
+                flex-direction: column-reverse;
+            }
+        }
+    </style>
 </head>
 <body>
-
     <header>
         <h2>
             Dashboard
         </h2>
     </header>
-
-    <div style="float: right; display:inline;width:50%;margin-right:4em;text-align:center;">
-        <img style="width:60%;margin:auto;" src="{{ url_for('static', filename='images/card_clipart.svg') }}">
-        <h3>
-            Flashcards and Active Recall: A Simple Way to Study Better
-        </h3>
-        <p>
-            Flashcards are cards with a question or word on one side and the answer on the other. When you use them, you try to remember the answer before flipping the card. This is called active recall, which means using your memory instead of just rereading notes.
-        </p>
-        <p>
-            Active recall helps you remember information better and for a longer time. It also shows you what you still need to study. Using flashcards this way is a simple and effective way to learn.
-        </p>
+    <div class="dashboard-container">
+        <div class="dashboard-grid" style="flex: 1;">
+            <a href="{{ url_for('my_stacks') }}" class="dashboard-button positive"> 📃 My Flashcards</a>
+            <a href="{{ url_for('create_stack') }}" class="dashboard-button"> 📝 Create Flashcards</a>
+            <a href="#" onclick="document.getElementById('importFile').click(); return false;" class="dashboard-button"> 📂 Upload JSON Flashcards</a>
+            <a href="{{ url_for('ai_generate') }}" class="dashboard-button"> ✨ Generate Flashcards using AI</a>
+            <a href="{{ url_for('my_saved_stacks') }}" class="dashboard-button">💾 My Saved Flashcards</a>
+            <a href="{{ url_for('marketplace') }}" class="dashboard-button">🛒 Browse marketplace</a>
+            <a href="{{ url_for('profile') }}" class="dashboard-button">👤 My Profile</a>
+        </div>
+        
+        <div style="flex: 1; text-align: center;">
+            <img style="width: 60%; margin: auto;" src="{{ url_for('static', filename='images/card_clipart.svg') }}">
+            <h3>Flashcards and Active Recall</h3>
+<p>Flashcards use active recall-testing your memory before checking the answer - which helps you remember better and identify what needs more practice.</p>
+        </div>
     </div>
-
-    <div class="dashboard-grid">
-        <a href="{{ url_for('my_stacks') }}" class="dashboard-button positive"> 📃 My Flashcards</a>
-        <a href="{{ url_for('create_stack') }}" class="dashboard-button"> 📝 Create Flashcards</a>
-        <a href="#" onclick="document.getElementById('importFile').click(); return false;" class="dashboard-button"> 📂 Upload JSON Flashcards</a>
-        <a href="{{ url_for('ai_generate') }}" class="dashboard-button"> ✨ Generate Flashcards using AI</a>
-        <a href="{{ url_for('my_saved_stacks') }}" class="dashboard-button">💾 My Saved Flashcards</a>
-        <a href="{{ url_for('marketplace') }}" class="dashboard-button">🛒 Browse marketplace</a>
-        <a href="{{ url_for('profile') }}" class="dashboard-button">👤 My Profile</a>
-    </div>
-
 <!-- FILE IMPORT -->
-
 <input type="file" id="importFile" accept=".json" style="display:none;" onchange="handleImport(this)">
-
 <script>
 async function handleImport(input) {
     const file = input.files[0];
     if (!file) return;
     
     try {
-        // Read file as text directly
         const text = await file.text();
-        
         console.log('File content:', text);
         console.log('First 100 chars:', text.substring(0, 100));
         
-        // Parse JSON
         const stackData = JSON.parse(text);
-        
         console.log('Parsed successfully:', stackData);
         
-        // Validate basic structure
         if (!stackData.title || !stackData.cards || !Array.isArray(stackData.cards)) {
             alert('Invalid JSON format. Missing required fields: title and cards.');
             return;
@@ -72,7 +68,6 @@ async function handleImport(input) {
             return;
         }
         
-        // Send to server
         const response = await fetch('/api/import-stack', {
             method: 'POST',
             headers: {
@@ -84,7 +79,6 @@ async function handleImport(input) {
         console.log('Response status:', response.status);
         console.log('Response headers:', response.headers.get('content-type'));
         
-        // Check if response is JSON
         const contentType = response.headers.get('content-type');
         if (!contentType || !contentType.includes('application/json')) {
             const errorText = await response.text();
@@ -106,11 +100,9 @@ async function handleImport(input) {
         alert('Error: ' + error.message);
         console.error('Full error:', error);
     } finally {
-        // Reset input
         input.value = '';
     }
 }
 </script>
-
 </body>
 </html>
